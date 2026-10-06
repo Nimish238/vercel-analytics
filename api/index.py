@@ -1,270 +1,42 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
+import json
+import os
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "*",
+}
 
-DATA = [
- {
-  "region": "apac",
-  "service": "catalog",
-  "latency_ms": 134.27,
-  "uptime_pct": 98.284,
-  "timestamp": 20250301
- },
- {
-  "region": "apac",
-  "service": "recommendations",
-  "latency_ms": 174.97,
-  "uptime_pct": 99.177,
-  "timestamp": 20250302
- },
- {
-  "region": "apac",
-  "service": "checkout",
-  "latency_ms": 231.43,
-  "uptime_pct": 99.378,
-  "timestamp": 20250303
- },
- {
-  "region": "apac",
-  "service": "checkout",
-  "latency_ms": 133.85,
-  "uptime_pct": 98.885,
-  "timestamp": 20250304
- },
- {
-  "region": "apac",
-  "service": "payments",
-  "latency_ms": 193.99,
-  "uptime_pct": 97.723,
-  "timestamp": 20250305
- },
- {
-  "region": "apac",
-  "service": "recommendations",
-  "latency_ms": 123.68,
-  "uptime_pct": 99.078,
-  "timestamp": 20250306
- },
- {
-  "region": "apac",
-  "service": "catalog",
-  "latency_ms": 205.08,
-  "uptime_pct": 98.782,
-  "timestamp": 20250307
- },
- {
-  "region": "apac",
-  "service": "analytics",
-  "latency_ms": 153.25,
-  "uptime_pct": 99.085,
-  "timestamp": 20250308
- },
- {
-  "region": "apac",
-  "service": "recommendations",
-  "latency_ms": 231.22,
-  "uptime_pct": 99.489,
-  "timestamp": 20250309
- },
- {
-  "region": "apac",
-  "service": "catalog",
-  "latency_ms": 99.16,
-  "uptime_pct": 99.381,
-  "timestamp": 20250310
- },
- {
-  "region": "apac",
-  "service": "recommendations",
-  "latency_ms": 223.15,
-  "uptime_pct": 97.423,
-  "timestamp": 20250311
- },
- {
-  "region": "apac",
-  "service": "analytics",
-  "latency_ms": 102.25,
-  "uptime_pct": 99.495,
-  "timestamp": 20250312
- },
- {
-  "region": "emea",
-  "service": "support",
-  "latency_ms": 220.5,
-  "uptime_pct": 97.528,
-  "timestamp": 20250301
- },
- {
-  "region": "emea",
-  "service": "payments",
-  "latency_ms": 154.94,
-  "uptime_pct": 98.634,
-  "timestamp": 20250302
- },
- {
-  "region": "emea",
-  "service": "checkout",
-  "latency_ms": 184.74,
-  "uptime_pct": 98.772,
-  "timestamp": 20250303
- },
- {
-  "region": "emea",
-  "service": "recommendations",
-  "latency_ms": 214.43,
-  "uptime_pct": 97.627,
-  "timestamp": 20250304
- },
- {
-  "region": "emea",
-  "service": "checkout",
-  "latency_ms": 126.62,
-  "uptime_pct": 97.72,
-  "timestamp": 20250305
- },
- {
-  "region": "emea",
-  "service": "checkout",
-  "latency_ms": 166.59,
-  "uptime_pct": 98.331,
-  "timestamp": 20250306
- },
- {
-  "region": "emea",
-  "service": "analytics",
-  "latency_ms": 166.31,
-  "uptime_pct": 97.84,
-  "timestamp": 20250307
- },
- {
-  "region": "emea",
-  "service": "analytics",
-  "latency_ms": 184.85,
-  "uptime_pct": 98.005,
-  "timestamp": 20250308
- },
- {
-  "region": "emea",
-  "service": "catalog",
-  "latency_ms": 127.12,
-  "uptime_pct": 97.469,
-  "timestamp": 20250309
- },
- {
-  "region": "emea",
-  "service": "checkout",
-  "latency_ms": 226.97,
-  "uptime_pct": 99.358,
-  "timestamp": 20250310
- },
- {
-  "region": "emea",
-  "service": "analytics",
-  "latency_ms": 215.84,
-  "uptime_pct": 99.366,
-  "timestamp": 20250311
- },
- {
-  "region": "emea",
-  "service": "payments",
-  "latency_ms": 156.2,
-  "uptime_pct": 98.195,
-  "timestamp": 20250312
- },
- {
-  "region": "amer",
-  "service": "recommendations",
-  "latency_ms": 151.01,
-  "uptime_pct": 98.467,
-  "timestamp": 20250301
- },
- {
-  "region": "amer",
-  "service": "payments",
-  "latency_ms": 111.87,
-  "uptime_pct": 98.886,
-  "timestamp": 20250302
- },
- {
-  "region": "amer",
-  "service": "payments",
-  "latency_ms": 127.09,
-  "uptime_pct": 97.3,
-  "timestamp": 20250303
- },
- {
-  "region": "amer",
-  "service": "checkout",
-  "latency_ms": 164.77,
-  "uptime_pct": 99.127,
-  "timestamp": 20250304
- },
- {
-  "region": "amer",
-  "service": "catalog",
-  "latency_ms": 146.48,
-  "uptime_pct": 98.108,
-  "timestamp": 20250305
- },
- {
-  "region": "amer",
-  "service": "analytics",
-  "latency_ms": 160.84,
-  "uptime_pct": 98.625,
-  "timestamp": 20250306
- },
- {
-  "region": "amer",
-  "service": "checkout",
-  "latency_ms": 122.16,
-  "uptime_pct": 99.029,
-  "timestamp": 20250307
- },
- {
-  "region": "amer",
-  "service": "payments",
-  "latency_ms": 152.34,
-  "uptime_pct": 97.169,
-  "timestamp": 20250308
- },
- {
-  "region": "amer",
-  "service": "checkout",
-  "latency_ms": 206.29,
-  "uptime_pct": 98.01,
-  "timestamp": 20250309
- },
- {
-  "region": "amer",
-  "service": "checkout",
-  "latency_ms": 197.32,
-  "uptime_pct": 98.513,
-  "timestamp": 20250310
- },
- {
-  "region": "amer",
-  "service": "checkout",
-  "latency_ms": 187.92,
-  "uptime_pct": 97.953,
-  "timestamp": 20250311
- },
- {
-  "region": "amer",
-  "service": "support",
-  "latency_ms": 234.76,
-  "uptime_pct": 98.072,
-  "timestamp": 20250312
- }
-]
+
+@app.middleware("http")
+async def add_cors(request: Request, call_next):
+    if request.method == "OPTIONS":
+        return Response(status_code=204, headers=CORS_HEADERS)
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        response = JSONResponse({"error": str(e)}, status_code=500)
+    for k, v in CORS_HEADERS.items():
+        response.headers[k] = v
+    return response
+
+
+def load_data():
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(here, "..", "q-vercel-latency.json"),
+        os.path.join(here, "q-vercel-latency.json"),
+        os.path.join(os.getcwd(), "q-vercel-latency.json"),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            with open(p) as f:
+                return json.load(f)
+    raise FileNotFoundError("q-vercel-latency.json not found in: " + ", ".join(candidates))
 
 
 def percentile(values, p):
@@ -279,12 +51,16 @@ def percentile(values, p):
 @app.post("/api")
 @app.post("/api/index")
 async def analyze(request: Request):
-    body = await request.json()
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
     regions = body.get("regions", [])
     threshold = body.get("threshold_ms", 180)
+    data = load_data()
     result = {}
     for r in regions:
-        rows = [d for d in DATA if d["region"] == r]
+        rows = [d for d in data if d["region"] == r]
         if not rows:
             continue
         lat = [d["latency_ms"] for d in rows]
