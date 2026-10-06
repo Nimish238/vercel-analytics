@@ -6,19 +6,16 @@ import json
 import math
 from pathlib import Path
 
-
 app = FastAPI()
 
-# Allow POST requests from any origin
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# Load telemetry data
 DATA_FILE = Path(__file__).parent.parent / "q-vercel-latency.json"
 
 with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -51,14 +48,11 @@ def percentile(values, percentile):
 
 @app.post("/")
 def analytics(request: AnalyticsRequest):
-
     result = []
 
     for region in request.regions:
-
         records = [
-            row
-            for row in telemetry
+            row for row in telemetry
             if row["region"] == region
         ]
 
