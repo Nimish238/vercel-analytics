@@ -16,11 +16,11 @@
         },
         {
           "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, OPTIONS"
+          "value": "POST, OPTIONS"
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type"
+          "value": "*"
         }
       ]
     }
@@ -28,7 +28,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/index.py"
+      "dest": "/api/index.py"
     }
   ]
 }
