@@ -70,4 +70,4 @@ async def analyze(request: Request):
             "avg_uptime": sum(up) / len(up),
             "breaches": sum(1 for x in lat if x > threshold),
         }
-    return JSONResponse(result)
+    return JSONResponse({"regions": result})
