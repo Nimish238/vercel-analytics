@@ -1,6 +1,28 @@
-from http.server import BaseHTTPRequestHandler
 import json
 import os
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+app = FastAPI()
+
+
+# Fallback: guarantees the header even when no Origin header is sent
+@app.middleware("http")
+async def force_cors(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
+# Added last, so it is outermost: handles OPTIONS preflight and Origin requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["POST", "GET", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    expose_headers=["Access-Control-Allow-Origin"],
+)
 
 
 def load_data():
@@ -24,7 +46,14 @@ def percentile(values, p):
     return s[f] + (s[c] - s[f]) * (k - f)
 
 
-def analyze(body):
+@app.post("/")
+@app.post("/api")
+@app.post("/api/index")
+async def analyze(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
     regions = body.get("regions", [])
     threshold = body.get("threshold_ms", 180)
     data = load_data()
@@ -41,35 +70,4 @@ def analyze(body):
             "avg_uptime": sum(up) / len(up),
             "breaches": sum(1 for x in lat if x > threshold),
         }
-    return result
-
-
-class handler(BaseHTTPRequestHandler):
-    def _send(self, status, payload=None):
-        self.send_response(status)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "*")
-        if payload is not None:
-            out = json.dumps(payload).encode()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(out)))
-            self.end_headers()
-            self.wfile.write(out)
-        else:
-            self.end_headers()
-
-    def do_OPTIONS(self):
-        self._send(204)
-
-    def do_GET(self):
-        self._send(200, {"message": "Send a POST with {regions, threshold_ms}"})
-
-    def do_POST(self):
-        try:
-            n = int(self.headers.get("Content-Length") or 0)
-            raw = self.rfile.read(n) if n else b"{}"
-            body = json.loads(raw or b"{}")
-            self._send(200, analyze(body))
-        except Exception as e:
-            self._send(500, {"error": str(e)})
+    return JSONResponse(result)
